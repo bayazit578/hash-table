@@ -1,0 +1,13 @@
+digraph {
+ rankdir=LR;
+splines=ortho;
+nodesep=0.9;
+ranksep=0.75;
+node [fontname="Fira Mono",color="#FF0000",style="filled",shape=tripleoctagon,fillcolor="#FFB0B0",];
+node_0[shape=record,label="ind: NULL | data: nothing | { prev: 1 | next: 1 } ",color="#0000FF",style="filled,bold,rounded",fillcolor="#B0B0FF"];
+node_1[shape=record,label=" ind: 1 | data: gay | { prev: 0 | next: 0 } ",style="filled,rounded",color="#03c03c",fillcolor="#B0FFB0",constraint=false];
+node_0 -> node_1 [weight=1000, style=invis];
+node_1 -> node_0 [weight=1000, style=invis];
+node_free [label=free,color="#03c03c",shape=rectangle,style="filled,rounded",fillcolor="#B0FFB0"];
+node_free -> node_-1 [color="#03c03c"]
+}

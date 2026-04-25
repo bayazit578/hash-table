@@ -1,0 +1,34 @@
+[
+  {
+    "file": "src/main.cpp",
+    "arguments": [
+      "g++",
+      "-o",
+      "compiled/program",
+      "src/main.cpp",
+      "-I.",
+      "-Iinclude",
+      "-Iinclude/list",
+      "-Iinclude/hash_table",
+      "-Wall"
+    ],
+    "directory": "/home/blyah/source/ded32/Hash-table",
+    "output": "compiled/program"
+  },
+  {
+    "file": "src/list/list.cpp",
+    "arguments": [
+      "g++",
+      "-o",
+      "compiled/program",
+      "src/list/list.cpp",
+      "-I.",
+      "-Iinclude",
+      "-Iinclude/list",
+      "-Iinclude/hash_table",
+      "-Wall"
+    ],
+    "directory": "/home/blyah/source/ded32/Hash-table",
+    "output": "compiled/program"
+  }
+]
