@@ -34,7 +34,7 @@ void hash_table_dump(const char* output_filename) {
     list_dump(hash_table[i], bucket_filename, &file_counter);
 
     printf(GREEN 
-        "\n=== Dump complete. Created %d dump files ===\n" RESET, 
+        "Dump complete. Created %d dump files\n" RESET, 
         file_counter);
 }
 
