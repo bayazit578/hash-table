@@ -4,7 +4,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <hashtable.h>
+#include <nmmintrin.h>
+
 #include "list.h"
+#include "read_file_types.h"
 
 #if defined HASH1
     #define HASH_FUN(...) hash_fun_1(__VA_ARGS__);
@@ -25,14 +28,9 @@
                 RED "No selected mode for hash fun" RESET);
 #endif
 
-const uint32_t TABLE_SIZE = 1000;
+const uint32_t TABLE_SIZE = 4000;
 
-typedef struct {
-    const char* string;
-    uint32_t len;
-} elem_t;
-
-void hash_table_dump(const char* base_filename);
+void hash_table_dump(const char* output_filename);
 uint32_t hash_table_insert(elem_t elem);
 int hash_fun_1(elem_t elem);
 int hash_fun_2(elem_t elem);

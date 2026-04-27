@@ -39,8 +39,8 @@ void hash_table_dump(const char* output_filename) {
 
     while(cell_counter < TABLE_SIZE) {
         if (hash_table[cell_counter]) {
-            merge_list_dumps(hash_table[cell_counter], output_filename, 
-                             cell_counter, bucket_counter, html_out);
+            merge_list_dumps(hash_table[cell_counter], output_filename, cell_counter, 
+                             bucket_counter, html_out);
             bucket_counter++;
         }
 
@@ -58,27 +58,6 @@ void hash_table_dump(const char* output_filename) {
            bucket_counter);
 }
 
-bool hash_table_find(elem_t elem, int (*hash_func)(elem_t)) {
-    int bucket_index = HASH_FUN(elem)
-    
-    list_t* list = hash_table[bucket_index];
-    if (!list) {
-        return false;
-    }
-    
-    uint32_t list_ind = list->contents[0].next;    
-    while (list_ind != 0) {
-        elem_t* stored = (elem_t*)list->contents[list_ind].value;
-        
-        if (stored && strcmp(stored->string, elem.string) == 0) {
-            return true;        
-        }
-        list_ind = list->contents[list_ind].next;
-    }
-    
-    return false;
-}
-
 uint32_t hash_table_insert(elem_t elem) {
     int ind = HASH_FUN(elem)
 
@@ -91,7 +70,7 @@ uint32_t hash_table_insert(elem_t elem) {
 
     elem_t* alloced_elem = (elem_t*)calloc(1, sizeof(elem_t));
     *alloced_elem = elem;
-    list_push_front(hash_table[ind], alloced_elem);
+    list_push_back(hash_table[ind], alloced_elem);
 
     return bucket_counter;
 }
@@ -102,12 +81,12 @@ int hash_fun_1(elem_t elem) {
 
 int hash_fun_2(elem_t elem) {
     int hash = elem.string[0];
-    return hash % TABLE_SIZE;
+    return hash;
 }
 
 int hash_fun_3(elem_t elem) {
     int hash = elem.len;
-    return hash % TABLE_SIZE;
+    return hash;
 }
 
 int hash_fun_4(elem_t elem) {
@@ -116,7 +95,7 @@ int hash_fun_4(elem_t elem) {
         hash += elem.string[i];
     }
 
-    return hash % TABLE_SIZE;            
+    return hash;            
 }   
 
 int hash_fun_5(elem_t elem) {
@@ -125,14 +104,10 @@ int hash_fun_5(elem_t elem) {
         hash = (hash << 1) ^ elem.string[i];
     }
 
-    return hash % TABLE_SIZE;
+    return hash;
 }
 
 int hash_fun_6(elem_t elem) {
-    int hash = 0;
-    for (uint32_t i = 0; i < elem.len; i++) {
-        hash = _mm_crc32_u8(hash, elem.string[i]);
-    }
-
-    return hash % TABLE_SIZE;
+    int hash = _mm_crc32_u32(-1, value);
+    return hash;
 }

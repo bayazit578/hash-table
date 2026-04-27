@@ -1,7 +1,5 @@
 #include "list.h"
 
-#include "hash_table.h"
-
 static void* const POISON = (void*)(uintptr_t)0xDEFACED;
 
 static const int MAX_CMD_LEN = 100;
@@ -66,7 +64,13 @@ void list_insert_after(list_t* cnucok, uint32_t ind, void* value) {
 
     cnucok->contents[ind].next = new_next_ind;
     cnucok->contents[old_next_ind].prev = new_next_ind;
+   
     get_free(cnucok);
+
+    if (cnucok->capacity != cnucok->size) {
+        uint32_t last_ind = cnucok->capacity - 1;
+        cnucok->contents[last_ind].next = cnucok->free;
+    }
 }
 
 void* list_erase(list_t* cnucok, uint32_t ind) {
@@ -129,14 +133,31 @@ void get_free(list_t* cnucok) {
 #define CLR_GREEN_BOLD_  "\"#03c03c\""
 #define CLR_BLUE_BOLD_   "\"#0000FF\""
 
-void list_dump(list_t* cnucok, const char* filename, uint32_t* file_number) {
+void merge_list_dumps(list_t* cnucok, const char* filename, 
+                      uint32_t cell_number, uint32_t bucket_number, 
+                      FILE* html_out) {
+    fprintf(html_out,
+        "<h2>Cell %u, bucket %u</h2>\n",
+        cell_number, bucket_number
+    );
+
+    list_dump(cnucok, filename, cell_number, bucket_number);
+
+    fprintf(html_out,
+        "<img src=\"photo_dumps/%s%u_%u.png\">",
+        filename, cell_number, bucket_number
+    );
+}
+
+void list_dump(list_t* cnucok, const char* filename, uint32_t cell_number, 
+               uint32_t bucket_number) {
     if (!cnucok || !filename) return;
 
     char full_filename[256];
-    snprintf(full_filename, sizeof(full_filename), "dot_files/%s_%d.dot", 
-             filename, *file_number);
-    
+    snprintf(full_filename, sizeof(full_filename), "dot_files/%s%u_%u.dot", 
+             filename, cell_number, bucket_number);
     FILE* dot_file = fopen(full_filename, "w");
+
     if (!dot_file) {
         fprintf(stderr, RED "Cannot open file %s for writing\n" RESET, 
                 full_filename);
@@ -188,17 +209,15 @@ void list_dump(list_t* cnucok, const char* filename, uint32_t* file_number) {
     if (cnucok->capacity > cnucok->size) {
         node_ind = cnucok->free;
         do {
-            value = (elem_t*)cnucok->contents[node_ind].value;
             fprintf(dot_file,
                 "node_%u[shape=record,"
-                "label=\" ind: %u | data: %s | { prev: %u | next: %u } \","
+                "label=\" ind: %u | data: POISON | { prev: %u | next: %u } \","
                 "style=\"filled,rounded\","
-                "color=" CLR_GREEN_BOLD_ ","
-                "fillcolor=" CLR_GREEN_LIGHT_","
+                "color=" CLR_RED_BOLD_ ","
+                "fillcolor=" CLR_RED_LIGHT_","
                 "constraint=false];\n",  
                 node_ind,
                 node_ind,
-                value->string,
                 cnucok->contents[node_ind].prev,
                 cnucok->contents[node_ind].next
             );
@@ -219,10 +238,12 @@ void list_dump(list_t* cnucok, const char* filename, uint32_t* file_number) {
     } while (node_ind != 0);
 
     fprintf(dot_file,
-        "node_free [label=free,color=" CLR_GREEN_BOLD_ ","
+        "node_head [label=head,color=" CLR_GREEN_BOLD_ ","
         "shape=record,"
         "style=\"filled,rounded\","
         "fillcolor=" CLR_GREEN_LIGHT_ "];\n"
+        "node_head -> node_%d [weight=100, style=solid];\n", 
+        cnucok->contents[0].next
     );
 
     // free
@@ -231,7 +252,7 @@ void list_dump(list_t* cnucok, const char* filename, uint32_t* file_number) {
     if (node_ind != -1) {
         do {
             fprintf(dot_file,
-                "node_%u -> node_%u [weight=1000, style=red];\n",
+                "node_%u -> node_%u [weight=1000, style=solid];\n",
                 node_ind,
                 cnucok->contents[node_ind].next
             );
@@ -239,11 +260,11 @@ void list_dump(list_t* cnucok, const char* filename, uint32_t* file_number) {
         } while ((int)node_ind != cnucok->free);
 
         fprintf(dot_file,
-            "node_free [label=free,color=" CLR_GREEN_BOLD_ ","
+            "node_free [label=free,color=" CLR_RED_BOLD_ ","
             "shape=record,"
             "style=\"filled,rounded\","
-            "fillcolor=" CLR_GREEN_LIGHT_ "];\n"
-            "node_free -> node_%d [weight=100, style=red];\n", 
+            "fillcolor=" CLR_RED_LIGHT_ "];\n"
+            "node_free -> node_%d [weight=100, style=solid];\n", 
             cnucok->free
         );
     }
@@ -253,11 +274,9 @@ void list_dump(list_t* cnucok, const char* filename, uint32_t* file_number) {
     fclose(dot_file);
 
     char cmd_string[MAX_CMD_LEN] = {};
-    snprintf(cmd_string, MAX_CMD_LEN, 
-        "dot -Tpng %s -o photo_dumps/%s.png", 
-        full_filename, filename);
+    snprintf(cmd_string, MAX_CMD_LEN,
+        "dot -Tpng %s -o photo_dumps/%s%u_%u.png", 
+        full_filename, filename, cell_number, bucket_number);
 
     system(cmd_string);
-
-    (*file_number)++;
 }
