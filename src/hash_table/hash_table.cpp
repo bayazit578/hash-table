@@ -1,10 +1,21 @@
 #include "hash_table.h"
 
-static list_t* hash_table[TABLE_SIZE] = {NULL};
+hash_info_t stats[] = {
+    {hash_fun_1, 0},
+    {hash_fun_2, 0},
+    {hash_fun_3, 0},
+    {hash_fun_4, 0},
+    {hash_fun_5, 0},
+    {hash_fun_6, 0}
+};
+
+const uint32_t TABLE_SIZE = 4000;
+
+static list_t* hash_table[TABLE_SIZE] = {};
 
 static const uint32_t MAX_NAME_LEN = 100;
 
-void hash_table_dump(const char* output_filename) {
+void hash_table_dump(const char* output_filename, uint32_t hash_number) {
     if (!output_filename) {
         fprintf(stderr,
             RED "No input filename for hashtable dump\n" RESET);
@@ -54,33 +65,47 @@ void hash_table_dump(const char* output_filename) {
 
     fclose(html_out);
 
-    printf(GREEN "Dump complete. Created %u dump files\n" RESET, 
-           bucket_counter);
+    stats[hash_number].bucket_counter = bucket_counter;
+    // printf(GREEN "Dump complete. Created %u dump files\n" RESET, 
+    //        bucket_counter);
 }
 
-bool hash_table_find(elem_t elem, int (*hash_func)(elem_t)) {
-    int bucket_index = HASH_FUN(elem)
-    
+void hash_table_dump_buckets(FILE* list_len_out, uint32_t hash_number) {
+    fprintf(list_len_out, "Created %u buckets\n", 
+            stats[hash_number].bucket_counter);
+    for (uint32_t i = 0; i < TABLE_SIZE; i++) {
+        if (hash_table[i]) {
+            fprintf(list_len_out, "%u: %u buckets\n",
+                    i, hash_table[i]->size);
+        } else {
+            fprintf(list_len_out, "%u: 0 buckets\n", i);
+        }
+    }
+}
+
+bool hash_table_search(elem_t elem, uint32_t hash_number) {
+    int bucket_index = stats[hash_number].func(elem);
+
     list_t* list = hash_table[bucket_index];
     if (!list) {
         return false;
     }
-    
+
     uint32_t list_ind = list->contents[0].next;    
     while (list_ind != 0) {
         elem_t* stored = (elem_t*)list->contents[list_ind].value;
-        
+
         if (stored && strcmp(stored->string, elem.string) == 0) {
             return true;        
         }
         list_ind = list->contents[list_ind].next;
     }
-    
+
     return false;
 }
 
-uint32_t hash_table_insert(elem_t elem) {
-    int ind = HASH_FUN(elem)
+uint32_t hash_table_insert(elem_t elem, uint32_t hash_number) {
+    int ind = stats[hash_number].func(elem);
 
     static uint32_t bucket_counter = 0;
 
@@ -94,45 +119,4 @@ uint32_t hash_table_insert(elem_t elem) {
     list_push_front(hash_table[ind], alloced_elem);
 
     return bucket_counter;
-}
-
-int hash_fun_1(elem_t elem) {
-    return 0;
-}
-
-int hash_fun_2(elem_t elem) {
-    int hash = elem.string[0];
-    return hash % TABLE_SIZE;
-}
-
-int hash_fun_3(elem_t elem) {
-    int hash = elem.len;
-    return hash % TABLE_SIZE;
-}
-
-int hash_fun_4(elem_t elem) {
-    int hash = 0;
-    for (uint32_t i = 0; i < elem.len; i++) {
-        hash += elem.string[i];
-    }
-
-    return hash % TABLE_SIZE;            
-}   
-
-int hash_fun_5(elem_t elem) {
-    int hash = 0;
-    for (uint32_t i = 0; i < elem.len; i++) {
-        hash = (hash << 1) ^ elem.string[i];
-    }
-
-    return hash % TABLE_SIZE;
-}
-
-int hash_fun_6(elem_t elem) {
-    int hash = 0;
-    for (uint32_t i = 0; i < elem.len; i++) {
-        hash = _mm_crc32_u8(hash, elem.string[i]);
-    }
-
-    return hash % TABLE_SIZE;
 }
