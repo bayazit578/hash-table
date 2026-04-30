@@ -93,6 +93,28 @@ void hash_table_dump_buckets(FILE* list_len_out, uint32_t hash_number,
     }
 }
 
+
+bool hash_table_search_(elem_t elem, uint32_t hash_number) {
+    int bucket_index = stats[hash_number].func(elem);
+
+    list_t* list = hash_table[bucket_index];
+    if (!list) {
+        return false;
+    }
+
+    uint32_t list_ind = list->contents[0].next; 
+    while (list_ind != 0) {
+        elem_t* stored = (elem_t*)list->contents[list_ind].value;
+
+        if (stored && strcmp(stored->string, elem.string) == 0) {
+            return true;        
+        }
+        list_ind = list->contents[list_ind].next;
+    }
+
+    return false;
+}
+
 bool hash_table_search0(elem_t elem, uint32_t hash_number) {
     int bucket_index = stats[hash_number].func(elem);
 
