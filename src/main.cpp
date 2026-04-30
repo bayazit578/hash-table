@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
 
     for (uint32_t i = 0; i < args.iter_count; i++) {
         elem_t elem = tokens[i % token_count];
-        found &= hash_table_search_(elem, args.func_number);
+        found &= hash_table_search3(elem, args.func_number);
     }
     
     printf("%u\n", found);

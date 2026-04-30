@@ -208,7 +208,7 @@ bool hash_table_search3(elem_t elem, uint32_t hash_number) {
         "test       r13d, r13d\n\t"
         "jz         1f\n\t"
         
-        ".align 16\n\t"
+        ".align 32\n\t"
         "3:\n\t"
         
         "mov        rax, r13\n\t"
