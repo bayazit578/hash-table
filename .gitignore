@@ -1,8 +1,9 @@
-compile_commands.json
-*.html
-.gdb_history
 .cache/
+compile_commands.json
 compiled/
 dot_files/
-photo_dumps/
-.git/
+.gdb_history
+.git
+perf.data
+perf.data.old
+

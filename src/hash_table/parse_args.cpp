@@ -6,6 +6,7 @@
 static struct argp_option options[] = {
     {"func", 'f', "NUM", 0, "Uses the hash function number NUM (0 - 5)"},
     {"input", 'i', "FILE", 0, "Read input from FILE"},
+    {"iterations", 'x', "COUNT", 0, "Searches COUNT different words in hash_table"},
     {0}
 };
 
@@ -23,13 +24,11 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
             break;
         }
 
+        case 'x':
+            args->iter_count = atoi(arg);
+            break;
         case 'i':
-            if (state->arg_num >= 1) {
-                argp_error(state, "Too many arguments");
-                return ARGP_ERR_UNKNOWN;
-            } 
             args->input_filename = arg;
-
             break;
 
         default:

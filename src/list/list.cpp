@@ -2,7 +2,7 @@
 
 static void* const POISON = (void*)(uintptr_t)0xDEFACED;
 
-static const int MAX_CMD_LEN = 100;
+static const int MAX_CMD_LEN = 500;
 
 list_t* list_create() {
     list_t* cnucok = (list_t*)calloc(1, sizeof(list_t));
@@ -144,7 +144,7 @@ void merge_list_dumps(list_t* cnucok, const char* filename,
     list_dump(cnucok, filename, cell_number, bucket_number);
 
     fprintf(html_out,
-        "<img src=\"photo_dumps/%s%u_%u.png\">",
+        "<img src=\"%s%u_%u.png\">\n",
         filename, cell_number, bucket_number
     );
 }

@@ -8,7 +8,12 @@
 #include "read_file.h"
 #include "parse_args.h"
 
-const uint32_t ITER_COUNT = 1000;
+
+#if defined NDEBUG
+    #define DEBUG_OUTPUT(...)
+#else 
+    #define DEBUG_OUTPUT(...) __VA_ARGS__
+#endif
 
 int main(int argc, char* argv[]) {
     args_t args = {};
@@ -20,7 +25,11 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
-    FILE* list_len_out = fopen("busket_len", "w");
+    char output_filename[MAX_NAME_LEN] = {};
+    snprintf(output_filename, MAX_NAME_LEN, "output/hash_out%u", 
+             args.func_number);
+
+    FILE* list_len_out = fopen(output_filename, "w");
     if (!list_len_out) {
         fprintf(stderr, RED "Error with output file opening\n" RESET);
         return EXIT_FAILURE;
@@ -31,18 +40,30 @@ int main(int argc, char* argv[]) {
     
     uint32_t token_count = 0;
     elem_t* tokens = buffer_to_tokens(buffer, buffer_size, &token_count);
-    
+
+    uint32_t word_count = 0;
     for (uint32_t i = 0; i < token_count; i++) {
-        hash_table_insert(tokens[i], args.func_number);
+        if (!hash_table_search0(tokens[i], args.func_number)) {
+            word_count++;
+            hash_table_insert(tokens[i], args.func_number);
+        }
     }
 
-    hash_table_dump_buckets(list_len_out, args.func_number);
+    DEBUG_OUTPUT(
+        hash_table_dump_buckets(list_len_out, args.func_number, 
+                                word_count);
+    )
 
-    for (uint32_t i = 0; i < ITER_COUNT; i++) {
+    bool found = true;
+
+    for (uint32_t i = 0; i < args.iter_count; i++) {
         elem_t elem = tokens[i % token_count];
-        hash_table_search(elem, args.func_number);
+        found &= hash_table_search2(elem, args.func_number);
     }
-
-    hash_table_dump("hash_table", args.func_number);
-    return EXIT_SUCCESS;
+    
+    DEBUG_OUTPUT(
+        hash_table_dump("hash_table", args.func_number);
+    )
+   
+    return found;
 }
