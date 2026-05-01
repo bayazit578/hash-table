@@ -16,6 +16,7 @@ extern "C" int my_strcmp(const char* s1, const char* s2);
 typedef uint32_t (*hash_func_t) (elem_t elem); 
 
 typedef struct {
+    const char* fun_name;
     hash_func_t func;
     uint32_t bucket_counter;
 } hash_info_t;

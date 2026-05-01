@@ -1,12 +1,13 @@
 #include "hash_table.h"
+#include "hash_funcs.h"
 
 hash_info_t stats[] = {
-    {hash_fun_1, 0},
-    {hash_fun_2, 0},
-    {hash_fun_3, 0},
-    {hash_fun_4, 0},
-    {hash_fun_5, 0},
-    {hash_fun_6, 0}
+    {"naive_hash_1"     , naive_hash_1     , 0},
+    {"first_char_hash_2", first_char_hash_2, 0},
+    {"len_hash_3"       , len_hash_3       , 0},
+    {"control_summ_4"   , control_summ_4   , 0},
+    {"rol_hash_5"       , rol_hash_5       , 0},
+    {"crc_hash_6"       , crc_hash_6       , 0}
 };
 
 const uint32_t TABLE_SIZE = 4000;
@@ -24,7 +25,8 @@ void hash_table_dump(const char* output_filename, uint32_t hash_number) {
     
     char html_filename[MAX_NAME_LEN] = {};
     snprintf(html_filename, MAX_NAME_LEN, 
-            "photo_dumps/%s%u.html", output_filename, hash_number);
+            "photo_dumps/%s.html", stats[hash_number].fun_name);
+    printf("%s\n", stats[hash_number].fun_name);
     FILE* html_out = fopen(html_filename, "w");
     if (!html_out) {
         fprintf(stderr, RED "Error with .html opening" RESET);
@@ -72,8 +74,6 @@ void hash_table_dump(const char* output_filename, uint32_t hash_number) {
     fclose(html_out);
 
     stats[hash_number].bucket_counter = bucket_counter;
-    // printf(GREEN "Dump complete. Created %u dump files\n" RESET, 
-    //        bucket_counter);
 }
 
 void hash_table_dump_buckets(FILE* list_len_out, uint32_t hash_number, 

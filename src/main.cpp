@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <argp.h>
+#include <string.h>
 
 #include "list.h"
 #include "hash_table.h"
@@ -15,9 +16,15 @@
     #define DEBUG_OUTPUT(...) __VA_ARGS__
 #endif
 
-int main(int argc, char* argv[]) {
+int main(const int argc, const char* argv[]) {
     args_t args = {};
-    argp_parse(&argp, argc, argv, 0, 0, &args);
+    char** argv_dup = (char**)calloc(argc, sizeof(char*));
+
+    for (int i = 0; i < argc; i++) {
+        argv_dup[i] = strdup(argv[i]);
+    }
+
+    argp_parse(&argp, argc, argv_dup, 0, 0, &args);
 
     FILE* input = fopen(args.input_filename, "r");
     if (!input) {
@@ -61,11 +68,13 @@ int main(int argc, char* argv[]) {
         found &= hash_table_search_(elem, args.func_number);
     }
     
-    printf("%u\n", found);
-
     DEBUG_OUTPUT(
         hash_table_dump("hash_table", args.func_number);
     )
+
+    for (int i = 0; i < argc; i++) {
+        free(argv_dup[i]);
+    }
    
     return found;
 }

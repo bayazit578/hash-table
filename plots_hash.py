@@ -27,7 +27,7 @@ def create_histogram(input_file, output_file):
         variance = sum((l - avg_length) ** 2 for l in lengths) / total_buckets if total_buckets > 0 else 0
 
         plt.figure(figsize=(15, 7))
-        plt.bar(indices, lengths, width=1.0, color='royalblue', edgecolor='none')
+        plt.bar(indices, lengths, width=5.0, color='royalblue', edgecolor='none')
         
         title_text = f"Количество бакетов: {word_count}    |    Средняя длина: {avg_length:.3f}    |    Load factor: {load_factor}    |    Дисперсия: {variance:.3f}"
         plt.title(title_text, fontsize=12, pad=15)
@@ -37,7 +37,7 @@ def create_histogram(input_file, output_file):
         plt.grid(axis='y', linestyle=':', alpha=0.6)
 
         plt.xticks(range(0, max(indices) + 1, 500))
-        plt.yticks(range(0, max(lengths) + 1, 1))
+        plt.yticks(range(0, max(lengths) + 1, 10))
 
         plt.savefig(output_file, bbox_inches='tight')
         plt.close()
