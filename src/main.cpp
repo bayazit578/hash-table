@@ -65,9 +65,9 @@ int main(const int argc, const char* argv[]) {
 
     for (uint32_t i = 0; i < args.iter_count; i++) {
         elem_t elem = tokens[i % token_count];
-        found &= hash_table_search_(elem, args.func_number);
+        found &= hash_table_search2(elem, args.func_number);
     }
-    
+
     DEBUG_OUTPUT(
         hash_table_dump("hash_table", args.func_number);
     )
@@ -75,6 +75,6 @@ int main(const int argc, const char* argv[]) {
     for (int i = 0; i < argc; i++) {
         free(argv_dup[i]);
     }
-   
+
     return found;
 }

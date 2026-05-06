@@ -1,6 +1,6 @@
 #include "read_file.h"
 
-elem_t* buffer_to_tokens(char* buffer, uint32_t buffer_size, 
+elem_t* buffer_to_tokens(char* buffer, uint32_t buffer_size,
                          uint32_t* count) {
     *count = 0;
     for (uint32_t i = 0; i < buffer_size; i++) {
@@ -14,7 +14,7 @@ elem_t* buffer_to_tokens(char* buffer, uint32_t buffer_size,
         fprintf(stderr, RED "Error with tokens allocation\n" RESET);
         return NULL;
     }
- 
+
     int token_idx = 0;
     char* line_start = (char*)buffer;
 
@@ -22,8 +22,14 @@ elem_t* buffer_to_tokens(char* buffer, uint32_t buffer_size,
         if (buffer[i] == '\n' || buffer[i] == '\0' || buffer[i] == ' ') {
             buffer[i] = '\0';
 
-            tokens[token_idx].string = line_start;
-            tokens[token_idx].len = &buffer[i] - line_start;
+            uint32_t length = &buffer[i] - line_start;
+            tokens[token_idx].len = length;
+            tokens[token_idx].string =
+                (char*)aligned_alloc(32, (length + 1) * sizeof(char));
+
+            for (uint32_t i = 0; i <= tokens[token_idx].len; i++) {
+                tokens[token_idx].string[i] = line_start[i];
+            }
 
             token_idx++;
             line_start = &buffer[i + 1];
@@ -46,7 +52,7 @@ char* read_file(FILE* in_file, uint32_t* buffer_size) {
     char* buff = (char*)calloc((uint32_t)input_info.st_size + 1, sizeof(char));
 
     uint32_t bytes_read = fread(buff, sizeof(buff[0]),
-                               (uint32_t)input_info.st_size, in_file);
+                                (uint32_t)input_info.st_size, in_file);
 
     buff[bytes_read] = '\0';
 

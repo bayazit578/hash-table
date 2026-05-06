@@ -1,5 +1,4 @@
 #include "hash_table.h"
-#include "hash_funcs.h"
 
 hash_info_t stats[] = {
     {"naive_hash_1"     , naive_hash_1     , 0},
@@ -94,7 +93,7 @@ void hash_table_dump_buckets(FILE* list_len_out, uint32_t hash_number,
 }
 
 
-bool hash_table_search_(elem_t elem, uint32_t hash_number) {
+bool hash_table_search0(elem_t elem, uint32_t hash_number) {
     int bucket_index = stats[hash_number].func(elem);
 
     list_t* list = hash_table[bucket_index];
@@ -115,7 +114,7 @@ bool hash_table_search_(elem_t elem, uint32_t hash_number) {
     return false;
 }
 
-bool hash_table_search0(elem_t elem, uint32_t hash_number) {
+bool hash_table_search1(elem_t elem, uint32_t hash_number) {
     int bucket_index = stats[hash_number].func(elem);
 
     list_t* list = hash_table[bucket_index];
@@ -137,7 +136,7 @@ bool hash_table_search0(elem_t elem, uint32_t hash_number) {
     return false;
 }
 
-bool hash_table_search1(elem_t elem, uint32_t hash_number) {
+bool hash_table_search2(elem_t elem, uint32_t hash_number) {
     int bucket_index = stats[hash_number].func(elem);
 
     list_t* list = hash_table[bucket_index];
@@ -150,7 +149,7 @@ bool hash_table_search1(elem_t elem, uint32_t hash_number) {
     while (list_ind != 0) {
         elem_t* stored = (elem_t*)contents[list_ind].value;
 
-        if (stored && strcmp_32(stored->string, elem.string) == 0) {
+        if (stored && strcmp_32(stored->string, elem.string, elem.len) == 0) {
             return true;        
         }
         list_ind = contents[list_ind].next;
@@ -159,7 +158,7 @@ bool hash_table_search1(elem_t elem, uint32_t hash_number) {
     return false;
 }
 
-bool hash_table_search2(elem_t elem, uint32_t hash_number) {
+bool hash_table_search3(elem_t elem, uint32_t hash_number) {
     int bucket_index = stats[hash_number].func(elem);
 
     list_t* list = hash_table[bucket_index];
@@ -172,7 +171,7 @@ bool hash_table_search2(elem_t elem, uint32_t hash_number) {
     while (list_ind != 0) {
         elem_t* stored = (elem_t*)contents[list_ind].value;
 
-        if (stored && my_strcmp(stored->string, elem.string) == 0) {
+        if (stored && my_strcmp(stored->string, elem.string, elem.len) == 0) {
             return true;        
         }
         list_ind = contents[list_ind].next;
@@ -181,7 +180,7 @@ bool hash_table_search2(elem_t elem, uint32_t hash_number) {
     return false;
 }
 
-bool hash_table_search3(elem_t elem, uint32_t hash_number) {
+bool hash_table_search4(elem_t elem, uint32_t hash_number) {
     int bucket_index = stats[hash_number].func(elem);
     list_t* list = hash_table[bucket_index];
     if (!list) return false;
@@ -273,26 +272,14 @@ void hash_table_insert(elem_t elem, uint32_t hash_number) {
     list_push_front(hash_table[ind], alloced_elem);
 }
 
-int strcmp_32(const char* a, const char* b) {
-    __m256i va = _mm256_loadu_si256((const __m256i*)a);
-    __m256i vb = _mm256_loadu_si256((const __m256i*)b);
-    
-    __m256i zero = _mm256_setzero_si256();
-    __m256i null_a = _mm256_cmpeq_epi8(va, zero);
-    __m256i null_b = _mm256_cmpeq_epi8(vb, zero);
-    
+int strcmp_32(const char* a, const char* b, uint8_t length) {
+    __m256i va = _mm256_load_si256((const __m256i*)a);
+    __m256i vb = _mm256_load_si256((const __m256i*)b);
+
     __m256i cmp = _mm256_cmpeq_epi8(va, vb);
-    
     int32_t mask_eq = _mm256_movemask_epi8(cmp);
-    int32_t mask_null_a = _mm256_movemask_epi8(null_a);
-    int32_t mask_null_b = _mm256_movemask_epi8(null_b);
+
+    int32_t valid_mask = (length == 32) ? -1 : (1 << length) - 1;
     
-    int32_t first_null = ffs(mask_null_a | mask_null_b);
-    
-    if (first_null == 0) {
-        return (mask_eq == -1) ? 0 : 1;
-    }
-    
-    int32_t check_mask = (1 << first_null) - 1;
-    return ((mask_eq & check_mask) == check_mask) ? 0 : 1;
+    return ((mask_eq & valid_mask) == valid_mask) ? 0 : 1;
 }

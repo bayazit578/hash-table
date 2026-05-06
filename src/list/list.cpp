@@ -5,7 +5,7 @@ static void* const POISON = (void*)(uintptr_t)0xDEFACED;
 static const int MAX_CMD_LEN = 500;
 
 list_t* list_create() {
-    list_t* cnucok = (list_t*)calloc(1, sizeof(list_t));
+    list_t* cnucok = (list_t*)aligned_alloc(32, sizeof(list_t));
     if (cnucok == NULL) {
         fprintf(stderr, RED "list_t allocation error." RESET);
         return NULL;
@@ -27,6 +27,12 @@ list_t* list_create() {
 }
 
 void list_destroy(list_t* cnucok) {
+    for (uint32_t i = 0; i < cnucok->capacity; i++) {
+        if (!cnucok->contents[i].value) {
+            free(cnucok->contents[i].value);
+        }
+    }
+
     free(cnucok->contents);
     cnucok->capacity = 0;
     cnucok->size = 0;

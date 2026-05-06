@@ -11,7 +11,7 @@
 #include "list.h"
 #include "read_file_types.h"
 
-extern "C" int my_strcmp(const char* s1, const char* s2);
+extern "C" int my_strcmp(const char* s1, const char* s2, uint8_t length);
 
 typedef uint32_t (*hash_func_t) (elem_t elem); 
 
@@ -26,10 +26,10 @@ extern const uint32_t MAX_NAME_LEN;
 
 void hash_table_dump(const char* output_filename, uint32_t hash_number);
 void hash_table_dump_buckets(FILE* list_len_out, uint32_t hash_number, uint32_t word_count);
-bool hash_table_search_(elem_t elem, uint32_t hash_number);
 bool hash_table_search0(elem_t elem, uint32_t hash_number);
 bool hash_table_search1(elem_t elem, uint32_t hash_number);
 bool hash_table_search2(elem_t elem, uint32_t hash_number);
 bool hash_table_search3(elem_t elem, uint32_t hash_number);
+bool hash_table_search4(elem_t elem, uint32_t hash_number);
 void hash_table_insert(elem_t elem, uint32_t hash_number);
-int strcmp_32(const char* a, const char* b);
+int strcmp_32(const char* a, const char* b, uint8_t length);
