@@ -199,34 +199,34 @@ bool hash_table_search4(elem_t elem, uint32_t hash_number) {
         "push       r14\n\t"
         "push       r15\n\t"
         
-        "mov        r14, %[search]\n\t"     // строка для поиска
-        "mov        r15, %[cont]\n\t"       // массив узлов
-        "mov        r13d, %[ind]\n\t"       // начальный индекс
+        "mov        r14, %[search]\n\t"   
+        "mov        r15, %[cont]\n\t"  
+        "mov        r13d, %[ind]\n\t"    
         
         "xor        %[res], %[res]\n\t"
         
         "test       r13d, r13d\n\t"
         "jz         1f\n\t"
         
-        "mov        rdi, r14\n\t"           // первый аргумент для strcmp
+        "mov        rdi, r14\n\t"   
         
         ".align 32\n\t"
         "3:\n\t"
         "mov        rax, r13\n\t"
-        "shl        rax, 4\n\t"              // rax = index * 16
-        "mov        rax, [r15 + rax]\n\t"    // указатель на строку узла
+        "shl        rax, 4\n\t"          
+        "mov        rax, [r15 + rax]\n\t" 
         "test       rax, rax\n\t"
         "jz         4f\n\t"
         
-        "mov        rsi, [rax]\n\t"          // второй аргумент для strcmp
+        "mov        rsi, [rax]\n\t"      
         "call       my_strcmp\n\t"
         "test       eax, eax\n\t"
-        "je         2f\n\t"                  // нашли!
+        "je         2f\n\t"               
         
         "4:\n\t"
         "mov        rax, r13\n\t"
         "shl        rax, 4\n\t"
-        "mov        r13d, [r15 + rax + 8]\n\t" // следующий индекс
+        "mov        r13d, [r15 + rax + 8]\n\t" 
         "test       r13d, r13d\n\t"
         "jnz        3b\n\t"
         
