@@ -188,7 +188,7 @@ bool hash_table_search4(elem_t elem, uint32_t hash_number) {
     node_t* contents = list->contents;
     const char* search_str = elem.string;
     uint32_t list_ind = contents[0].next;
-    bool result;
+    bool result = false;
     
     asm volatile(
         ".intel_syntax noprefix\n\t"
@@ -196,41 +196,44 @@ bool hash_table_search4(elem_t elem, uint32_t hash_number) {
         "push       rbx\n\t"
         "push       r12\n\t"
         "push       r13\n\t"
+        "push       r14\n\t"
+        "push       r15\n\t"
         
-        "mov        rbx, %[search]\n\t"
-        "mov        r12, %[cont]\n\t"
-        "mov        r13d, %[ind]\n\t"
+        "mov        r14, %[search]\n\t"     // строка для поиска
+        "mov        r15, %[cont]\n\t"       // массив узлов
+        "mov        r13d, %[ind]\n\t"       // начальный индекс
+        
         "xor        %[res], %[res]\n\t"
-        
-        "mov        rdi, rbx\n\t"
         
         "test       r13d, r13d\n\t"
         "jz         1f\n\t"
         
+        "mov        rdi, r14\n\t"           // первый аргумент для strcmp
+        
         ".align 32\n\t"
         "3:\n\t"
-        
         "mov        rax, r13\n\t"
-        "shl        rax, 4\n\t"
-        "mov        rax, [r12 + rax]\n\t"
+        "shl        rax, 4\n\t"              // rax = index * 16
+        "mov        rax, [r15 + rax]\n\t"    // указатель на строку узла
         "test       rax, rax\n\t"
         "jz         4f\n\t"
         
-        "mov        rsi, [rax]\n\t"
-        
+        "mov        rsi, [rax]\n\t"          // второй аргумент для strcmp
         "call       my_strcmp\n\t"
         "test       eax, eax\n\t"
-        "je         2f\n\t"
+        "je         2f\n\t"                  // нашли!
         
         "4:\n\t"
         "mov        rax, r13\n\t"
         "shl        rax, 4\n\t"
-        "mov        r13d, [r12 + rax + 8]\n\t"
+        "mov        r13d, [r15 + rax + 8]\n\t" // следующий индекс
         "test       r13d, r13d\n\t"
         "jnz        3b\n\t"
         
         "1:\n\t"
         "vzeroupper\n\t"
+        "pop        r15\n\t"
+        "pop        r14\n\t"
         "pop        r13\n\t"
         "pop        r12\n\t"
         "pop        rbx\n\t"
@@ -239,6 +242,8 @@ bool hash_table_search4(elem_t elem, uint32_t hash_number) {
         "2:\n\t"
         "mov        %[res], 1\n\t"
         "vzeroupper\n\t"
+        "pop        r15\n\t"
+        "pop        r14\n\t"
         "pop        r13\n\t"
         "pop        r12\n\t"
         "pop        rbx\n\t"
@@ -250,8 +255,8 @@ bool hash_table_search4(elem_t elem, uint32_t hash_number) {
         : [search] "r" (search_str),
           [cont] "r" (contents),
           [ind] "r" (list_ind)
-        : "rax", "rbx", "r12", "r13",
-          "rdi", "rsi", "rcx", "rdx",
+        : "rax", "rcx", "rdx", "rdi", "rsi",
+          "r8", "r9", "r10", "r11",
           "ymm0", "ymm1", "ymm2", "ymm3",
           "cc", "memory"
     );
