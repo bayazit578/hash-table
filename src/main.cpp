@@ -72,6 +72,10 @@ int main(const int argc, const char* argv[]) {
         hash_table_dump("hash_table", args.func_number);
     )
 
+    free(buffer);
+
+    destroy_tokens(tokens, token_count);
+
     for (int i = 0; i < argc; i++) {
         free(argv_dup[i]);
     }

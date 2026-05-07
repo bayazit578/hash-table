@@ -12,7 +12,7 @@ DOT_DIR="dot_files"
 PNG_DIR="photo_dumps"
 LEN_DIR="output"
 
-CFLAGS+=" $1 $2"
+CFLAGS+=" $1 $2 $3"
 
 mkdir -p $DOT_DIR $PNG_DIR $LEN_DIR
 

@@ -127,7 +127,7 @@ bool hash_table_search1(elem_t elem, uint32_t hash_number) {
     while (list_ind != 0) {
         elem_t* stored = (elem_t*)contents[list_ind].value;
 
-        if (stored && strcmp(stored->string, elem.string) == 0) {
+        if (stored && !strcmp(stored->string, elem.string)) {
             return true;        
         }
         list_ind = contents[list_ind].next;
@@ -149,7 +149,29 @@ bool hash_table_search2(elem_t elem, uint32_t hash_number) {
     while (list_ind != 0) {
         elem_t* stored = (elem_t*)contents[list_ind].value;
 
-        if (stored && strcmp_32(stored->string, elem.string, elem.len) == 0) {
+        if (stored && !strcmp_32(stored->string, elem.string, elem.len)) {
+            return true;        
+        }
+        list_ind = contents[list_ind].next;
+    }
+
+    return false;
+}
+
+bool hash_table_search2_aligned(elem_t elem, uint32_t hash_number) {
+    int bucket_index = stats[hash_number].func(elem);
+
+    list_t* list = hash_table[bucket_index];
+    if (!list) {
+        return false;
+    }
+
+    node_t* contents = list->contents;
+    uint32_t list_ind = contents[0].next; 
+    while (list_ind != 0) {
+        elem_t* stored = (elem_t*)contents[list_ind].value;
+
+        if (stored && !strcmp_32(stored->string, elem.string, elem.len)) {
             return true;        
         }
         list_ind = contents[list_ind].next;
@@ -171,7 +193,7 @@ bool hash_table_search3(elem_t elem, uint32_t hash_number) {
     while (list_ind != 0) {
         elem_t* stored = (elem_t*)contents[list_ind].value;
 
-        if (stored && my_strcmp(stored->string, elem.string, elem.len) == 0) {
+        if (stored && !my_strcmp(stored->string, elem.string, elem.len)) {
             return true;        
         }
         list_ind = contents[list_ind].next;
@@ -278,6 +300,20 @@ void hash_table_insert(elem_t elem, uint32_t hash_number) {
 }
 
 int strcmp_32(const char* a, const char* b, uint8_t length) {
+
+    __m256i va = _mm256_loadu_si256((const __m256i*)a);
+    __m256i vb = _mm256_loadu_si256((const __m256i*)b);
+
+    __m256i cmp = _mm256_cmpeq_epi8(va, vb);
+    int32_t mask_eq = _mm256_movemask_epi8(cmp);
+
+    int32_t valid_mask = (length == 32) ? -1 : (1 << length) - 1;
+    
+    return ((mask_eq & valid_mask) == valid_mask) ? 0 : 1;
+}
+
+int strcmp_32_aligned(const char* a, const char* b, uint8_t length) {
+
     __m256i va = _mm256_load_si256((const __m256i*)a);
     __m256i vb = _mm256_load_si256((const __m256i*)b);
 

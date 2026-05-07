@@ -1,15 +1,15 @@
 #include "read_file.h"
 
 elem_t* buffer_to_tokens(char* buffer, uint32_t buffer_size,
-                         uint32_t* count) {
-    *count = 0;
+                         uint32_t* token_count) {
+    *token_count = 0;
     for (uint32_t i = 0; i < buffer_size; i++) {
         if (buffer[i] == '\n' || buffer[i] == '\0' || buffer[i] == ' ') {
-            (*count)++;
+            (*token_count)++;
         }
     }
 
-    elem_t* tokens = (elem_t*)calloc(*count, sizeof(elem_t));
+    elem_t* tokens = (elem_t*)calloc(*token_count, sizeof(elem_t));
     if (!tokens) {
         fprintf(stderr, RED "Error with tokens allocation\n" RESET);
         return NULL;
@@ -24,8 +24,13 @@ elem_t* buffer_to_tokens(char* buffer, uint32_t buffer_size,
 
             uint32_t length = &buffer[i] - line_start;
             tokens[token_idx].len = length;
-            tokens[token_idx].string =
-                (char*)aligned_alloc(32, (length + 1) * sizeof(char));
+            // if (!token_idx) { 
+                tokens[token_idx].string =
+                    (char*)calloc((length + 1), sizeof(char));
+            // } else {
+            //     tokens[token_idx].string =
+            //         (char*)aligned_alloc(32, (length + 1) * sizeof(char));
+            // }
 
             for (uint32_t i = 0; i <= tokens[token_idx].len; i++) {
                 tokens[token_idx].string[i] = line_start[i];
@@ -59,4 +64,14 @@ char* read_file(FILE* in_file, uint32_t* buffer_size) {
     *buffer_size = bytes_read;
 
     return buff;
+}
+
+void destroy_tokens(elem_t* tokens, uint32_t token_count) {
+    for (uint32_t i = 0; i < token_count; i++) {
+        if (tokens[i].string) {
+            free(tokens[i].string);
+        }
+    }
+
+    free(tokens);
 }

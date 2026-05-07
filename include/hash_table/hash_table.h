@@ -29,7 +29,9 @@ void hash_table_dump_buckets(FILE* list_len_out, uint32_t hash_number, uint32_t 
 bool hash_table_search0(elem_t elem, uint32_t hash_number);
 bool hash_table_search1(elem_t elem, uint32_t hash_number);
 bool hash_table_search2(elem_t elem, uint32_t hash_number);
+bool hash_table_search2_aligned(elem_t elem, uint32_t hash_number);
 bool hash_table_search3(elem_t elem, uint32_t hash_number);
 bool hash_table_search4(elem_t elem, uint32_t hash_number);
 void hash_table_insert(elem_t elem, uint32_t hash_number);
 int strcmp_32(const char* a, const char* b, uint8_t length);
+int strcmp_32_aligned(const char* a, const char* b, uint8_t length);
